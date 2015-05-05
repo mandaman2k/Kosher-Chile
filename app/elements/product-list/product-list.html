@@ -1,0 +1,77 @@
+<link rel="import" href="../base-page/base-page.html">
+<link rel="import" href="../../bower_components/core-menu/core-menu.html">
+<link rel="import" href="../../bower_components/core-list/core-list.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-action-dialog.html">
+
+<polymer-element name="product-list" extends="base-page" attributes="products">
+  <template>
+    <link rel="stylesheet" href="product-list.css">
+
+    <core-drawer-panel id="drawerPanel">
+      <core-header-panel drawer mode="seamed">
+        <core-toolbar>Menu</core-toolbar>
+        <core-menu>
+          <paper-item>Productos</paper-item>
+        </core-menu>
+      </core-header-panel>
+
+      <div main layout vertical>
+        <core-header-panel id="headerPanel" mode="seamed" flex>
+          <core-toolbar>
+            <paper-icon-button icon="menu" core-drawer-toggle></paper-icon-button>
+            <div id="title" flex>Kosher Chile</div>
+            <paper-icon-button icon="search" on-tap="{{toggleDialog1}}"></paper-icon-button>
+            <paper-action-dialog backdrop autoCloseDisabled layered="false" id="dialog">
+              <paper-input autofocus label="Buscar Producto" id="searchInput" on-input="{{updateFilter}}" floatingLabel></paper-input>
+              <paper-button class="colored" raised affirmative>Buscar</paper-button>
+            </paper-action-dialog>
+          </core-toolbar>
+          <div class="content">
+          <core-list id="list" data="{{filteredData}}" scrollTarget="{{$.headerPanel.scroller}}" runwayFactor="5">
+            <template>
+              <div class="row" layout horizontal center data-index="{{index}}">
+                  {{model.gsx$producto.$t}}
+                  <br>
+                  {{model.gsx$marca.$t}}
+                  <br>
+                  {{model.gsx$descripcion1.$t}}
+              </div>
+            </template>
+          </core-list>
+          </div>
+        </core-header-panel>
+      </div>
+    </core-drawer-panel>
+    
+  </template>
+  <script>
+    (function () {
+      Polymer({
+        willPrepare: function () {
+                this.super();
+                this.$.list.updateSize();
+        },
+        productsChanged: function () {
+                //console.dir(this.products);
+                this.filteredData = this.products;
+        },
+        toggleDialog1: function (e) {
+          this.$.dialog.toggle();
+          this.$.searchInput.focus();
+        },
+        updateFilter: function (e) {
+            if (this.filterThrottle) {
+                clearTimeout(this.filterThrottle)
+            }
+            this.filterThrottle = setTimeout(function () {
+                var value = this.$.searchInput.value;
+                this.filteredData = this.products.filter(function (o) {
+                    return new RegExp(value, 'i').test(o.gsx$producto.$t);
+                }.bind(this));
+            }.bind(this), 500);
+        }
+      });
+    })();
+  </script>
+</polymer-element>
